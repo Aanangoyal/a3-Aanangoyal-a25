@@ -1,74 +1,81 @@
-const http = require( "http" ),
-      fs   = require( "fs" ),
-      // IMPORTANT: you must run `npm install` in the directory for this assignment
-      // to install the mime library if you"re testing this on your local machine.
-      // However, Glitch will install it automatically by looking in your package.json
-      // file.
-      mime = require( "mime" ),
-      dir  = "public/",
-      port = 3000
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
 
-const appdata = [
-  { "model": "toyota", "year": 1999, "mpg": 23 },
-  { "model": "honda", "year": 2004, "mpg": 30 },
-  { "model": "ford", "year": 1987, "mpg": 14} 
-]
+// Middleware
+app.use(express.static('public'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const server = http.createServer( function( request,response ) {
-  if( request.method === "GET" ) {
-    handleGet( request, response )    
-  }else if( request.method === "POST" ){
-    handlePost( request, response ) 
-  }
-})
+// In-memory data storage
+let movies = [
+    {
+        id: 1,
+        title: "The Matrix",
+        rating: 9,
+        year: 1999,
+        category: "Excellent" // This is the derived field
+    },
+    {
+        id: 2,
+        title: "Avatar",
+        rating: 7,
+        year: 2009,
+        category: "Good"
+    }
+];
 
-const handleGet = function( request, response ) {
-  const filename = dir + request.url.slice( 1 ) 
+let nextId = 3;
 
-  if( request.url === "/" ) {
-    sendFile( response, "public/index.html" )
-  }else{
-    sendFile( response, filename )
-  }
+// Function to calculate derived field (category based on rating)
+function calculateCategory(rating) {
+    if (rating >= 9) return "Excellent";
+    if (rating >= 7) return "Good";
+    if (rating >= 5) return "Average";
+    return "Poor";
 }
 
-const handlePost = function( request, response ) {
-  let dataString = ""
+// Routes
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+});
 
-  request.on( "data", function( data ) {
-      dataString += data 
-  })
+app.get('/results', (req, res) => {
+    res.sendFile(__dirname + '/public/results.html');
+});
 
-  request.on( "end", function() {
-    console.log( JSON.parse( dataString ) )
+// API endpoints
+app.get('/api/movies', (req, res) => {
+    res.json(movies);
+});
 
-    // ... do something with the data here!!!
+app.post('/api/movies', (req, res) => {
+    const { title, rating, year } = req.body;
+    
+    const newMovie = {
+        id: nextId++,
+        title: title,
+        rating: parseInt(rating),
+        year: parseInt(year),
+        category: calculateCategory(parseInt(rating)) // Derived field
+    };
+    
+    movies.push(newMovie);
+    res.json(newMovie);
+});
 
-    response.writeHead( 200, "OK", {"Content-Type": "text/plain" })
-    response.end("test")
-  })
-}
+app.delete('/api/movies/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = movies.findIndex(movie => movie.id === id);
+    
+    if (index !== -1) {
+        movies.splice(index, 1);
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ error: 'Movie not found' });
+    }
+});
 
-const sendFile = function( response, filename ) {
-   const type = mime.getType( filename ) 
-
-   fs.readFile( filename, function( err, content ) {
-
-     // if the error = null, then we"ve loaded the file successfully
-     if( err === null ) {
-
-       // status code: https://httpstatuses.com
-       response.writeHeader( 200, { "Content-Type": type })
-       response.end( content )
-
-     }else{
-
-       // file not found, error code 404
-       response.writeHeader( 404 )
-       response.end( "404 Error: File Not Found" )
-
-     }
-   })
-}
-
-server.listen( process.env.PORT || port )
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
