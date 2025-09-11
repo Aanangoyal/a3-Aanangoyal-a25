@@ -16,8 +16,8 @@ The application uses Flexbox for layout design, ensuring responsive and visually
 
 
 ## Design/Evaluation Achievements
-Names: Goyal, A. and Diamond, J.
-1. Aarogya R. suggested adding a confirmation dialog before deleting data to prevent accidental deletions. 
+Names: Theo and Diamond.
+1. Thei suggested adding a confirmation dialog before deleting data to prevent accidental deletions. 
 2. Diamond recommended improving the table layout by adding sorting functionality for better usability.
-3. Aarogya R. also proposed including a search bar to filter movies by title or category. 
+3. Theo also proposed including a search bar to filter movies by title or category. 
 4. Diamond suggested enhancing the user experience by displaying a summary of the total number of movies and their categories at the top of the results page.
