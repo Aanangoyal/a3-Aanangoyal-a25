@@ -129,9 +129,9 @@ document.addEventListener('DOMContentLoaded', function() {
                   <td><strong>${escapeHtml(movie.title)}</strong></td>
                   <td>${escapeHtml(movie.genre)}</td>
                   <td>
-                      <span class="rating-badge ${getRatingClass(movie.rating)}">
-                          ${movie.rating}/10
-                      </span>
+                      <input type="number" class="rating-input" value="${movie.rating}" 
+                          min="0" max="10" step="0.1" 
+                          onchange="updateRating(${movie.id}, this.value)" />
                   </td>
                   <td>${formatDate(movie.dateAdded)}</td>
                   <td>
@@ -181,6 +181,30 @@ document.addEventListener('DOMContentLoaded', function() {
           }
       } catch (error) {
           console.error('Error deleting movie:', error);
+          showErrorMessage('Network error. Please try again.');
+      }
+  };
+
+  // Update movie rating
+  window.updateRating = async function(movieId, newRating) {
+      try {
+          const response = await fetch(`/api/movies/${movieId}/rating`, {
+              method: 'PATCH',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ rating: parseFloat(newRating) })
+          });
+
+          if (response.ok) {
+              loadAllMovies(); // Refresh the movies list
+              showSuccessMessage('Rating updated successfully!');
+          } else {
+              const error = await response.json();
+              showErrorMessage(error.error || 'Failed to update rating');
+          }
+      } catch (error) {
+          console.error('Error updating rating:', error);
           showErrorMessage('Network error. Please try again.');
       }
   };

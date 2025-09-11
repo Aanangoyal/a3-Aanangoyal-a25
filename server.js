@@ -37,68 +37,74 @@ function calculateRecommendation(rating) {
         return "Highly Recommended";
     } else if (rating >= 6.0) {
         return "Worth Watching";
-    } else if (rating >= 4.0) {
-        return "Mediocre";
     } else {
         return "Skip";
     }
 }
 
 // Routes
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.get('/results', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'results.html'));
-});
-
-// API endpoint to get all movies (Results functionality)
 app.get('/api/movies', (req, res) => {
     res.json(movies);
 });
 
-// API endpoint to add a new movie (Form/Entry functionality)
 app.post('/api/movies', (req, res) => {
-    const { title, genre, rating } = req.body;
-    
-    if (!title || !genre || !rating) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    const numericRating = parseFloat(rating);
-    if (isNaN(numericRating) || numericRating < 0 || numericRating > 10) {
-        return res.status(400).json({ error: 'Rating must be a number between 0 and 10' });
-    }
-
-    // Create new movie with derived field
+    const { title, genre, rating, dateAdded } = req.body;
     const newMovie = {
         id: nextId++,
-        title: title.trim(),
-        genre: genre.trim(),
-        rating: numericRating,
-        dateAdded: new Date().toISOString().split('T')[0],
-        recommendation: calculateRecommendation(numericRating) // Derived field computation
+        title,
+        genre,
+        rating: parseFloat(rating),
+        dateAdded,
+        recommendation: calculateRecommendation(parseFloat(rating))
     };
-
     movies.push(newMovie);
     res.json(newMovie);
 });
 
-// API endpoint to delete a movie (Form/Entry functionality)
-app.delete('/api/movies/:id', (req, res) => {
-    const movieId = parseInt(req.params.id);
-    const movieIndex = movies.findIndex(movie => movie.id === movieId);
-    
-    if (movieIndex === -1) {
-        return res.status(404).json({ error: 'Movie not found' });
-    }
+app.put('/api/movies/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const { title, genre, rating, dateAdded } = req.body;
+    const movie = movies.find(m => m.id === id);
 
-    const deletedMovie = movies.splice(movieIndex, 1)[0];
-    res.json(deletedMovie);
+    if (movie) {
+        movie.title = title || movie.title;
+        movie.genre = genre || movie.genre;
+        movie.rating = rating !== undefined ? parseFloat(rating) : movie.rating;
+        movie.dateAdded = dateAdded || movie.dateAdded;
+        movie.recommendation = calculateRecommendation(movie.rating);
+        res.json(movie);
+    } else {
+        res.status(404).json({ message: "Movie not found" });
+    }
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+app.patch('/api/movies/:id/rating', (req, res) => {
+    const id = parseInt(req.params.id);
+    const { rating } = req.body;
+    const movie = movies.find(m => m.id === id);
+
+    if (movie) {
+        movie.rating = parseFloat(rating);
+        movie.recommendation = calculateRecommendation(movie.rating);
+        res.json(movie);
+    } else {
+        res.status(404).json({ message: "Movie not found" });
+    }
+});
+
+app.delete('/api/movies/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    movies = movies.filter(m => m.id !== id);
+    res.json({ message: "Movie deleted" });
+});
+
+// Serve frontend
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
