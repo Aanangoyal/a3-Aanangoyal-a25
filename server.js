@@ -2,12 +2,10 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
-// Middleware
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// In-memory database (tabular dataset with 3+ fields)
 let movies = [
     {
         id: 1,
@@ -15,7 +13,7 @@ let movies = [
         genre: "Drama",
         rating: 9.5,
         dateAdded: "2024-01-15",
-        recommendation: "Must Watch" // Derived field
+        recommendation: "Must Watch" 
     },
     {
         id: 2,
@@ -23,13 +21,12 @@ let movies = [
         genre: "Crime",
         rating: 8.8,
         dateAdded: "2024-02-20",
-        recommendation: "Highly Recommended" // Derived field
+        recommendation: "Highly Recommended" 
     }
 ];
 
 let nextId = 3;
 
-// Server Logic: Function to compute derived field
 function calculateRecommendation(rating) {
     if (rating >= 9.0) {
         return "Must Watch";
@@ -42,7 +39,6 @@ function calculateRecommendation(rating) {
     }
 }
 
-// Routes
 app.get('/api/movies', (req, res) => {
     res.json(movies);
 });
@@ -98,7 +94,6 @@ app.delete('/api/movies/:id', (req, res) => {
     res.json({ message: "Movie deleted" });
 });
 
-// Serve frontend
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -107,7 +102,6 @@ app.get('/results', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'results.html'));
 });
 
-// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

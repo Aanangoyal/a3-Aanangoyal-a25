@@ -1,6 +1,10 @@
 # Movie Rating Tracker - Aanan Goyal
 
+https://a2-aanangoyal-a25.onrender.com
+
 A web application to track movie ratings, built with Node.js, Express, HTML, CSS, and JavaScript. Users can add movies with title, rating, and release year, view them in a table, and delete entries. Movies are automatically categorized as Excellent, Good, Average, or Poor based on their rating.
+
+The application uses Flexbox for layout design, ensuring responsive and visually appealing alignment of elements such as the navigation bar, movie cards, and tables.
 
 ## Features
 
@@ -8,6 +12,7 @@ A web application to track movie ratings, built with Node.js, Express, HTML, CSS
 - Automatic categorization of movies based on rating.
 - View all movies in a table format.
 - Delete movies from the database.
+- Update ratings given for th emovie.
 
 
 ## Design/Evaluation Achievements

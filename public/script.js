@@ -1,6 +1,6 @@
-// Main JavaScript file for both index.html and results.html
+// Main JS file for both index.html and results.html
 document.addEventListener('DOMContentLoaded', function() {
-  // Check which page we're on
+  // Check which page
   const currentPage = window.location.pathname;
   
   if (currentPage === '/' || currentPage.includes('index.html')) {
@@ -9,17 +9,15 @@ document.addEventListener('DOMContentLoaded', function() {
       initResultsPage();
   }
 
-  // Initialize index page functionality
+  // Initialize index page
   function initIndexPage() {
       const movieForm = document.getElementById('movieForm');
       const recentMoviesDiv = document.getElementById('recentMovies');
 
       if (!movieForm || !recentMoviesDiv) return;
-
-      // Load recent movies on page load
+      
       loadRecentMovies();
 
-      // Handle form submission
       movieForm.addEventListener('submit', async function(e) {
           e.preventDefault();
           
@@ -42,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
               if (response.ok) {
                   const newMovie = await response.json();
                   movieForm.reset();
-                  loadRecentMovies(); // Refresh the recent movies display
+                  loadRecentMovies(); 
                   showSuccessMessage(`"${newMovie.title}" added successfully!`);
               } else {
                   const error = await response.json();
@@ -54,7 +52,6 @@ document.addEventListener('DOMContentLoaded', function() {
           }
       });
 
-      // Load and display recent movies
       async function loadRecentMovies() {
           try {
               const response = await fetch('/api/movies');
@@ -67,7 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
           }
       }
 
-      // Display recent movies in the preview section
       function displayRecentMovies(movies) {
           if (movies.length === 0) {
               recentMoviesDiv.innerHTML = '<p>No movies added yet. Add your first movie!</p>';
@@ -87,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
   }
 
-  // Initialize results page functionality
+  // Initialize results page
   function initResultsPage() {
       const moviesTableBody = document.getElementById('moviesTableBody');
       const movieCountSpan = document.getElementById('movieCount');
@@ -96,10 +92,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (!moviesTableBody || !movieCountSpan) return;
 
-      // Load all movies on page load
       loadAllMovies();
 
-      // Load and display all movies
       async function loadAllMovies() {
           try {
               const response = await fetch('/api/movies');
@@ -113,7 +107,6 @@ document.addEventListener('DOMContentLoaded', function() {
           }
       }
 
-      // Display movies in the table
       function displayMovies(movies) {
           if (movies.length === 0) {
               if (moviesTable) moviesTable.style.display = 'none';
@@ -150,16 +143,14 @@ document.addEventListener('DOMContentLoaded', function() {
           moviesTableBody.innerHTML = moviesHTML;
       }
 
-      // Update movie count display
       function updateMovieCount(count) {
           movieCountSpan.textContent = count;
       }
 
-      // Make loadAllMovies available globally for delete function
       window.loadAllMovies = loadAllMovies;
   }
 
-  // Delete movie function (global scope for onclick)
+  // Delete movie function 
   window.deleteMovie = async function(movieId) {
       if (!confirm('Are you sure you want to delete this movie?')) {
           return;
@@ -172,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
           if (response.ok) {
               if (window.loadAllMovies) {
-                  window.loadAllMovies(); // Refresh the movies list
+                  window.loadAllMovies();
               }
               showSuccessMessage('Movie deleted successfully!');
           } else {
@@ -197,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
           });
 
           if (response.ok) {
-              loadAllMovies(); // Refresh the movies list
+              loadAllMovies(); 
               showSuccessMessage('Rating updated successfully!');
           } else {
               const error = await response.json();
@@ -209,7 +200,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
   };
 
-  // Utility functions used by both pages
   function getRatingClass(rating) {
       if (rating >= 8.5) return 'rating-excellent';
       if (rating >= 7.0) return 'rating-good';
