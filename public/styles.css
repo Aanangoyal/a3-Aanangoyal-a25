@@ -11,6 +11,7 @@ body {
   color: #333;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
+  text-align: center;
 }
 
 .container {
@@ -24,7 +25,6 @@ body {
 
 /* Header */
 .header {
-  text-align: center;
   background: rgba(255, 255, 255, 0.95);
   padding: 30px;
   border-radius: 15px;
@@ -59,12 +59,6 @@ body {
   text-decoration: none;
   border-radius: 25px;
   font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.nav-link:hover {
-  background: white;
-  transform: translateY(-2px);
 }
 
 .nav-link.active {
@@ -91,7 +85,6 @@ body {
   color: #4a5568;
   font-size: 1.8rem;
   margin-bottom: 25px;
-  text-align: center;
 }
 
 /* Form Styles */
@@ -110,6 +103,7 @@ body {
   font-weight: 500;
   color: #4a5568;
   margin-bottom: 8px;
+  text-align: left;
 }
 
 .form-group input, .form-group select {
@@ -118,6 +112,7 @@ body {
   border-radius: 8px;
   font-size: 1rem;
   font-family: 'Poppins', Arial, sans-serif;
+  text-align: left;
 }
 
 .form-group input:focus, .form-group select:focus {
@@ -137,10 +132,6 @@ body {
   font-family: 'Poppins', Arial, sans-serif;
 }
 
-.submit-btn:hover {
-  transform: translateY(-2px);
-}
-
 /* Movie Cards */
 .recent-movies {
   min-height: 200px;
@@ -154,6 +145,7 @@ body {
   padding: 15px;
   border-radius: 8px;
   border-left: 4px solid #667eea;
+  text-align: left;
 }
 
 .movie-title {
@@ -171,7 +163,6 @@ body {
   text-decoration: none;
   border-radius: 20px;
   font-weight: 500;
-  text-align: center;
 }
 
 /* Results Page */
@@ -199,7 +190,6 @@ body {
   border-collapse: collapse;
   background: white;
   border-radius: 8px;
-  overflow: hidden;
 }
 
 .movies-table th {
@@ -213,10 +203,7 @@ body {
 .movies-table td {
   padding: 12px 15px;
   border-bottom: 1px solid #e2e8f0;
-}
-
-.movies-table tbody tr:hover {
-  background: #f7fafc;
+  text-align: left;
 }
 
 .rating-badge, .recommendation-badge {
@@ -248,12 +235,7 @@ body {
   cursor: pointer;
 }
 
-.delete-btn:hover {
-  background: #e53e3e;
-}
-
 .footer {
-  text-align: center;
   padding: 20px;
   margin-top: 40px;
   color: rgba(255, 255, 255, 0.8);
@@ -261,11 +243,6 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .main-content {
-      grid-template-columns: 1fr;
-  }
-  .results-header {
-      flex-direction: column;
-      gap: 15px;
-  }
+  .main-content { grid-template-columns: 1fr; }
+  .results-header { flex-direction: column; gap: 15px; }
 }
