@@ -5,43 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Movies - Movie Rating Tracker</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>All Movies</h1>
-            <nav>
-                <a href="/">Home</a>
-                <a href="/results">View All Movies</a>
-            </nav>
+        <header class="header">
+            <h1>🎬 Movie Rating Tracker</h1>
+            <p>Your complete movie collection and ratings</p>
         </header>
 
-        <main>
+        <nav class="navigation">
+            <a href="/" class="nav-link">Add Movie</a>
+            <a href="/results" class="nav-link active">View All Movies</a>
+        </nav>
+
+        <main class="main-content">
             <section class="results-section">
-                <h2>Movie Database</h2>
-                <table id="moviesTable">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Rating</th>
-                            <th>Year</th>
-                            <th>Category</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Movies will be displayed here via JavaScript -->
-                    </tbody>
-                </table>
-                
-                <div id="noMovies" style="display: none;">
-                    <p>No movies in the database yet. <a href="/">Add some movies!</a></p>
+                <div class="results-header">
+                    <h2>All Movies</h2>
+                    <div class="movie-count">
+                        Total: <span id="movieCount">0</span> movies
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="moviesTable" class="movies-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Genre</th>
+                                <th>Rating</th>
+                                <th>Date Added</th>
+                                <th>Recommendation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moviesTableBody">
+                            <tr>
+                                <td colspan="6" class="loading-row">Loading movies...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <h3>No movies yet!</h3>
+                    <p>Start building your movie collection by adding your first movie.</p>
+                    <a href="/" class="add-first-movie-btn">Add Your First Movie</a>
                 </div>
             </section>
         </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 Movie Rating Tracker. Track your cinematic journey!</p>
+        </footer>
     </div>
 
-    <script src="results.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

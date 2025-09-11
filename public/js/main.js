@@ -1,76 +1,263 @@
-async function fetchData() {
-  const response = await fetch('/api/data');
-  const data = await response.json();
+// Main JavaScript file for both index.html and results.html
+document.addEventListener('DOMContentLoaded', function() {
+  // Check which page we're on
+  const currentPage = window.location.pathname;
+  
+  if (currentPage === '/' || currentPage.includes('index.html')) {
+      initIndexPage();
+  } else if (currentPage === '/results' || currentPage.includes('results.html')) {
+      initResultsPage();
+  }
 
-  const tbody = document.querySelector('#ratingsTable tbody');
-  tbody.innerHTML = '';
+  // Initialize index page functionality
+  function initIndexPage() {
+      const movieForm = document.getElementById('movieForm');
+      const recentMoviesDiv = document.getElementById('recentMovies');
 
-  data.forEach(row => {
-    const tr = document.createElement('tr');
+      if (!movieForm || !recentMoviesDiv) return;
 
-    tr.innerHTML = `
-      <td>${row.id}</td>
-      <td>${row.title}</td>
-      <td>${row.genre}</td>
-      <td>${row.rating}</td>
-      <td>${row.dateWatched}</td>
-      <td class="${getVerdictClass(row.verdict)}">${row.verdict}</td>
-    `;
+      // Load recent movies on page load
+      loadRecentMovies();
 
-    // Click row to load data into form for editing
-    tr.addEventListener('click', () => {
-      document.getElementById('id').value = row.id;
-      document.getElementById('title').value = row.title;
-      document.getElementById('genre').value = row.genre;
-      document.getElementById('rating').value = row.rating;
-      document.getElementById('dateWatched').value = row.dateWatched;
-    });
+      // Handle form submission
+      movieForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const formData = new FormData(movieForm);
+          const movieData = {
+              title: formData.get('title'),
+              genre: formData.get('genre'),
+              rating: parseFloat(formData.get('rating'))
+          };
 
-    tbody.appendChild(tr);
-  });
-}
+          try {
+              const response = await fetch('/api/movies', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(movieData)
+              });
 
-function getVerdictClass(verdict) {
-  if (verdict === 'Must Watch') return 'verdict-good';
-  if (verdict === 'Decent') return 'verdict-okay';
-  return 'verdict-bad';
-}
+              if (response.ok) {
+                  const newMovie = await response.json();
+                  movieForm.reset();
+                  loadRecentMovies(); // Refresh the recent movies display
+                  showSuccessMessage(`"${newMovie.title}" added successfully!`);
+              } else {
+                  const error = await response.json();
+                  showErrorMessage(error.error || 'Failed to add movie');
+              }
+          } catch (error) {
+              console.error('Error adding movie:', error);
+              showErrorMessage('Network error. Please try again.');
+          }
+      });
 
-// Handle add/update
-document.getElementById('ratingForm').addEventListener('submit', async e => {
-  e.preventDefault();
+      // Load and display recent movies
+      async function loadRecentMovies() {
+          try {
+              const response = await fetch('/api/movies');
+              const movies = await response.json();
+              
+              displayRecentMovies(movies.slice(-3).reverse()); // Show last 3 movies
+          } catch (error) {
+              console.error('Error loading movies:', error);
+              recentMoviesDiv.innerHTML = '<p class="error">Failed to load recent movies.</p>';
+          }
+      }
 
-  const payload = {
-    id: document.getElementById('id').value,
-    title: document.getElementById('title').value,
-    genre: document.getElementById('genre').value,
-    rating: parseInt(document.getElementById('rating').value),
-    dateWatched: document.getElementById('dateWatched').value,
+      // Display recent movies in the preview section
+      function displayRecentMovies(movies) {
+          if (movies.length === 0) {
+              recentMoviesDiv.innerHTML = '<p>No movies added yet. Add your first movie!</p>';
+              return;
+          }
+
+          const moviesHTML = movies.map(movie => `
+              <div class="movie-card">
+                  <div class="movie-title">${escapeHtml(movie.title)}</div>
+                  <div class="movie-details">
+                      ${escapeHtml(movie.genre)} • Rating: ${movie.rating}/10 • ${movie.recommendation}
+                  </div>
+              </div>
+          `).join('');
+
+          recentMoviesDiv.innerHTML = moviesHTML;
+      }
+  }
+
+  // Initialize results page functionality
+  function initResultsPage() {
+      const moviesTableBody = document.getElementById('moviesTableBody');
+      const movieCountSpan = document.getElementById('movieCount');
+      const emptyState = document.getElementById('emptyState');
+      const moviesTable = document.getElementById('moviesTable');
+
+      if (!moviesTableBody || !movieCountSpan) return;
+
+      // Load all movies on page load
+      loadAllMovies();
+
+      // Load and display all movies
+      async function loadAllMovies() {
+          try {
+              const response = await fetch('/api/movies');
+              const movies = await response.json();
+              
+              displayMovies(movies);
+              updateMovieCount(movies.length);
+          } catch (error) {
+              console.error('Error loading movies:', error);
+              showErrorMessage('Failed to load movies.');
+          }
+      }
+
+      // Display movies in the table
+      function displayMovies(movies) {
+          if (movies.length === 0) {
+              if (moviesTable) moviesTable.style.display = 'none';
+              if (emptyState) emptyState.style.display = 'block';
+              return;
+          }
+
+          if (moviesTable) moviesTable.style.display = 'table';
+          if (emptyState) emptyState.style.display = 'none';
+
+          const moviesHTML = movies.map(movie => `
+              <tr>
+                  <td><strong>${escapeHtml(movie.title)}</strong></td>
+                  <td>${escapeHtml(movie.genre)}</td>
+                  <td>
+                      <span class="rating-badge ${getRatingClass(movie.rating)}">
+                          ${movie.rating}/10
+                      </span>
+                  </td>
+                  <td>${formatDate(movie.dateAdded)}</td>
+                  <td>
+                      <span class="recommendation-badge ${getRecommendationClass(movie.recommendation)}">
+                          ${escapeHtml(movie.recommendation)}
+                      </span>
+                  </td>
+                  <td>
+                      <button class="delete-btn" onclick="deleteMovie(${movie.id})">
+                          Delete
+                      </button>
+                  </td>
+              </tr>
+          `).join('');
+
+          moviesTableBody.innerHTML = moviesHTML;
+      }
+
+      // Update movie count display
+      function updateMovieCount(count) {
+          movieCountSpan.textContent = count;
+      }
+
+      // Make loadAllMovies available globally for delete function
+      window.loadAllMovies = loadAllMovies;
+  }
+
+  // Delete movie function (global scope for onclick)
+  window.deleteMovie = async function(movieId) {
+      if (!confirm('Are you sure you want to delete this movie?')) {
+          return;
+      }
+
+      try {
+          const response = await fetch(`/api/movies/${movieId}`, {
+              method: 'DELETE'
+          });
+
+          if (response.ok) {
+              if (window.loadAllMovies) {
+                  window.loadAllMovies(); // Refresh the movies list
+              }
+              showSuccessMessage('Movie deleted successfully!');
+          } else {
+              const error = await response.json();
+              showErrorMessage(error.error || 'Failed to delete movie');
+          }
+      } catch (error) {
+          console.error('Error deleting movie:', error);
+          showErrorMessage('Network error. Please try again.');
+      }
   };
 
-  await fetch('/api/add', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  // Utility functions used by both pages
+  function getRatingClass(rating) {
+      if (rating >= 8.5) return 'rating-excellent';
+      if (rating >= 7.0) return 'rating-good';
+      if (rating >= 5.0) return 'rating-average';
+      return 'rating-poor';
+  }
 
-  fetchData();
+  function getRecommendationClass(recommendation) {
+      const classMap = {
+          'Must Watch': 'rec-must-watch',
+          'Highly Recommended': 'rec-highly-recommended',
+          'Worth Watching': 'rec-worth-watching',
+          'Mediocre': 'rec-mediocre',
+          'Skip': 'rec-skip'
+      };
+      return classMap[recommendation] || 'rec-worth-watching';
+  }
+
+  function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+      });
+  }
+
+  function showSuccessMessage(message) {
+      const messageDiv = document.createElement('div');
+      messageDiv.textContent = message;
+      messageDiv.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #48bb78;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 6px;
+          z-index: 1000;
+          font-weight: 500;
+      `;
+      document.body.appendChild(messageDiv);
+      
+      setTimeout(() => {
+          document.body.removeChild(messageDiv);
+      }, 3000);
+  }
+
+  function showErrorMessage(message) {
+      const messageDiv = document.createElement('div');
+      messageDiv.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #f56565;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 6px;
+          z-index: 1000;
+          font-weight: 500;
+      `;
+      messageDiv.textContent = message;
+      document.body.appendChild(messageDiv);
+      
+      setTimeout(() => {
+          document.body.removeChild(messageDiv);
+      }, 3000);
+  }
+
+  function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+  }
 });
-
-// Handle delete
-document.getElementById('deleteForm').addEventListener('submit', async e => {
-  e.preventDefault();
-
-  const id = document.getElementById('deleteId').value;
-
-  await fetch('/api/delete', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id }),
-  });
-
-  fetchData();
-});
-
-// Initial load
-fetchData();
