@@ -1,11 +1,15 @@
 {
-  "name": "a2-movie-tracker",
+  "name": "a2-movie-rating-tracker",
   "version": "1.0.0",
-  "description": "Simple movie rating tracker app",
+  "description": "A simple movie rating tracker web application",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
+  "keywords": ["movie", "rating", "tracker", "nodejs", "express"],
+  "author": "Your Name Here",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2"
   },

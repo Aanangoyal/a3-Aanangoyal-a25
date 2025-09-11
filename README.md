@@ -1,57 +1,32 @@
-# Assignment 2 - Movie Rating Tracker
+# Movie Rating Tracker - Aanan Goyal
 
-A simple two-tier web application for tracking movie ratings built with HTML, CSS, JavaScript, and Node.js.
+A two-tier web application for tracking movie ratings, built with HTML, CSS, JavaScript, and Node.js.
 
-## Application Description
+## Features
 
-This application allows users to add movies with ratings and view their complete movie database. The app automatically categorizes movies based on their ratings and maintains all data in server memory.
+- Add movies with title, rating (1-10), and release year.
+- Automatic categorization of movies based on rating:
+  - Rating 9-10: "Excellent"
+  - Rating 7-8: "Good"
+  - Rating 5-6: "Average"
+  - Rating 1-4: "Poor"
+- View all movies in a table format.
+- Delete movies from the database.
+- Responsive design for mobile and desktop.
 
-### Features
-- Add new movies with title, rating (1-10), and release year
-- Automatic categorization based on rating (derived field)
-- View all movies in a table format
-- Delete movies from the database
-- Responsive design
+## Technical Overview
 
-### Derived Field Logic
-The application calculates a "category" field for each movie based on its rating:
-- Rating 9-10: "Excellent" 
-- Rating 7-8: "Good"
-- Rating 5-6: "Average"
-- Rating 1-4: "Poor"
+### Server
+- Built with Node.js and Express.
+- Maintains a dataset with fields: title, rating, year, and category.
+- RESTful API for CRUD operations.
+- Automatically calculates the "category" field based on the rating.
 
-## Technical Implementation
-
-### Baseline Requirements Met
-1. **Server**: Node.js/Express server that maintains a tabular dataset with 4 fields (title, rating, year, category)
-2. **Results functionality**: `/results` page shows entire dataset in a table
-3. **Form/Entry functionality**: Form to add movies, buttons to delete movies
-4. **Server Logic**: Automatic calculation of category field based on rating
-5. **Derived field**: Category is computed from the rating field before storing
-
-### HTML Requirements
-- ✅ HTML Forms with text inputs, number inputs, and submit button
-- ✅ Results page displaying all data in a table format
-- ✅ All pages validate as proper HTML5
-- ✅ Multiple pages accessible from homepage via navigation
-
-### CSS Requirements
-- ✅ Element selectors (body, header, table, etc.)
-- ✅ ID selectors (#movieForm, #movieList, etc.)
-- ✅ Class selectors (.container, .form-group, .movie-item, etc.)
-- ✅ Flexbox layout for main content areas
-- ✅ Google Fonts (Roboto) used throughout
-- ✅ External stylesheet (styles.css)
-
-### JavaScript Requirements
-- ✅ Front-end JavaScript for fetching data from server
-- ✅ Form submission handling
-- ✅ Dynamic DOM manipulation
-
-### Node.js Requirements
-- ✅ Express HTTP server serving files and handling API requests
-- ✅ Server-side calculation of derived fields
-- ✅ RESTful API endpoints for CRUD operations
+### Front-End
+- HTML5 forms for adding movies.
+- Results page displays all movies in a table.
+- Dynamic DOM manipulation using JavaScript.
+- Responsive design using Flexbox and Google Fonts.
 
 ## File Structure
 ```
