@@ -1,65 +1,51 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Assignment Priority Generator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎬 Movie Rating Tracker</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header>
-    <h1>📘 Assignment Priority Generator</h1>
-    <p class="sub">Simple two-tier app — add, edit (by id), delete assignments</p>
-  </header>
-
-  <main class="container">
-    <section class="form-card">
-      <h2>Add / Update Assignment</h2>
-      <form id="assignmentForm">
-        <!-- id optional: if matches existing id -> update -->
-        <input id="id" name="id" placeholder="ID (leave blank to create new)" />
-        <input id="subject" name="subject" type="text" placeholder="Subject" required minlength="2" />
-        <input id="hours" name="hours" type="number" min="0" placeholder="Hours expected" required />
-        <input id="dueDate" name="dueDate" type="date" required />
-        <div class="actions">
-          <button type="submit" id="submitBtn">Submit</button>
-          <button type="button" id="clearBtn" class="alt">Clear</button>
-        </div>
+  <h1>🎬 Movie Rating Tracker</h1>
+  <div class="container">
+    
+    <div class="form-card">
+      <h2>Add / Update Movie</h2>
+      <form id="ratingForm">
+        <input type="text" id="id" placeholder="ID" required>
+        <input type="text" id="title" placeholder="Movie Title" required>
+        <input type="text" id="genre" placeholder="Genre" required>
+        <input type="number" id="rating" placeholder="Your Rating (1–10)" min="1" max="10" required>
+        <input type="date" id="dateWatched" required>
+        <button type="submit">Submit</button>
       </form>
-      <p class="hint">If you enter an existing ID and submit, the row will be updated.</p>
-    </section>
+    </div>
 
-    <section class="form-card">
-      <h2>Remove Assignment</h2>
+    <div class="form-card">
+      <h2>Remove Movie</h2>
       <form id="deleteForm">
-        <input id="deleteId" name="deleteId" type="text" placeholder="ID to delete" required />
+        <input type="text" id="deleteId" placeholder="ID to delete" required>
         <button type="submit" class="danger">Delete</button>
       </form>
-    </section>
+    </div>
 
-    <section class="table-card">
-      <table id="assignmentTable" aria-describedby="results-desc">
-        <caption id="results-desc">Tasks stored on server</caption>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Subject</th>
-            <th>Hours</th>
-            <th>Due Date</th>
-            <th>Stress</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <p class="note">Tip: click a row to load it into the Add form for editing.</p>
-    </section>
-  </main>
+    <table id="ratingsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Genre</th>
+          <th>Rating</th>
+          <th>Date Watched</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-  <footer class="footer">
-    <p>Built for Assignment 2 — Short Stack</p>
-  </footer>
-
-  <script src="script.js" defer></script>
+  <script src="script.js"></script>
 </body>
 </html>

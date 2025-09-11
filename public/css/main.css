@@ -1,63 +1,92 @@
-/* style.css - concise, <150 lines */
-
-/* Element selectors */
-* { box-sizing: border-box; }
 body {
   font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #fdfbfb, #ebedee);
   margin: 0;
-  background: linear-gradient(135deg,#f5f7fa,#cfe3f8);
-  color: #223;
-  -webkit-font-smoothing:antialiased;
+  padding: 0;
+  color: #2c3e50;
 }
 
-/* Header */
-header { text-align:center; padding:22px 10px 10px; }
-h1 { margin:0; font-size:2rem; color:#1f3b59; }
-.sub { margin:4px 0 0; color:#46627f; font-size:0.95rem; }
-
-/* Container uses max-width + centered layout */
-.container { width:90%; max-width:980px; margin:18px auto; }
-
-/* Card (class selector) */
-.form-card, .table-card {
-  background:#fff; border-radius:12px; padding:16px; margin:12px 0;
-  box-shadow:0 6px 18px rgba(30,50,80,0.06);
+h1 {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 2.2rem;
 }
 
-/* Form inputs */
-input[type="text"], input[type="number"], input[type="date"] {
-  width:calc(50% - 12px);
-  padding:10px; margin:6px; border-radius:8px; border:1px solid #d0d8e6;
-  font-size:0.95rem;
+.container {
+  width: 90%;
+  max-width: 950px;
+  margin: auto;
 }
 
-input#id { width:calc(100% - 22px); } /* id field full width */
-input#subject { width:calc(50% - 12px); }
-
-/* Actions use flexbox */
-.actions { display:flex; gap:10px; margin-top:8px; align-items:center; }
-button {
-  padding:10px 14px; border-radius:8px; border:none;
-  background:#2b8bd6; color:#fff; cursor:pointer; font-weight:600;
+/* Form styling */
+.form-card {
+  background: #fff;
+  padding: 20px;
+  margin: 15px 0;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
 }
-button.alt { background:#f0f4f8; color:#223; border:1px solid #d6e1f0; }
-button.danger { background:#e14b4b; }
-button:hover { opacity:0.95; transform:translateY(-1px); transition:all .12s; }
 
-/* Table (element selectors) */
-table { width:100%; border-collapse:collapse; margin-top:10px; }
-th, td { padding:10px 8px; text-align:center; font-size:0.95rem; }
-th { background:#1f3b59; color:#fff; font-weight:600; }
+.form-card h2 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
 
-/* striped rows and hover */
-tbody tr:nth-child(even) { background:#fbfdff; }
-tbody tr:hover { background:#f2f7ff; cursor:pointer; }
+.form-card input, .form-card button {
+  padding: 10px;
+  margin: 6px 4px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+}
 
-/* stress score classes */
-.stress-low { color:#1f8f4c; font-weight:700; }
-.stress-med { color:#d9822b; font-weight:700; }
-.stress-high { color:#c62828; font-weight:700; }
+.form-card button {
+  background: #3498db;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
 
-.hint, .note { color:#5a6b78; font-size:0.9rem; margin-top:8px; }
+.form-card button:hover {
+  background: #2980b9;
+}
 
-.footer { text-align:center; color:#617788; font-size:0.9rem; margin:14px 0; }
+button.danger {
+  background: #e74c3c;
+}
+
+button.danger:hover {
+  background: #c0392b;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 12px;
+  text-align: center;
+}
+
+th {
+  background: #2c3e50;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+tr:hover {
+  background: #f1f1f1;
+}
+
+/* Verdict colors */
+.verdict-good { color: green; font-weight: 600; }
+.verdict-okay { color: orange; font-weight: 600; }
+.verdict-bad { color: red; font-weight: 600; }
