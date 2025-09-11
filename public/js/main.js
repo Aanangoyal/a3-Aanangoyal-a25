@@ -1,128 +1,76 @@
-// script.js
+async function fetchData() {
+  const response = await fetch('/api/data');
+  const data = await response.json();
 
-const assignmentTableBody = document.querySelector('#assignmentTable tbody');
-const assignmentForm = document.getElementById('assignmentForm');
-const deleteForm = document.getElementById('deleteForm');
+  const tbody = document.querySelector('#ratingsTable tbody');
+  tbody.innerHTML = '';
 
-const idInput = document.getElementById('id');
-const subjectInput = document.getElementById('subject');
-const hoursInput = document.getElementById('hours');
-const dueDateInput = document.getElementById('dueDate');
-const deleteIdInput = document.getElementById('deleteId');
-
-async function getData() {
-  const res = await fetch('/data');
-  if (!res.ok) return [];
-  const json = await res.json();
-  return json.data || [];
-}
-
-function stressClass(value) {
-  if (value <= 3) return 'stress-low';
-  if (value <= 6) return 'stress-med';
-  return 'stress-high';
-}
-
-function formatDate(dStr) {
-  try {
-    const d = new Date(dStr);
-    return d.toLocaleDateString();
-  } catch {
-    return dStr;
-  }
-}
-
-function renderTable(rows) {
-  assignmentTableBody.innerHTML = '';
-  if (!rows.length) {
-    const r = document.createElement('tr');
-    const td = document.createElement('td');
-    td.colSpan = 5;
-    td.textContent = 'No assignments yet. Add one using the form.';
-    td.style.padding = '14px';
-    r.appendChild(td);
-    assignmentTableBody.appendChild(r);
-    return;
-  }
-  rows.forEach(r => {
+  data.forEach(row => {
     const tr = document.createElement('tr');
+
     tr.innerHTML = `
-      <td>${r.id}</td>
-      <td>${r.subject}</td>
-      <td>${r.hours}</td>
-      <td>${formatDate(r.dueDate)}</td>
-      <td class="${stressClass(r.stress)}">${r.stress}</td>
+      <td>${row.id}</td>
+      <td>${row.title}</td>
+      <td>${row.genre}</td>
+      <td>${row.rating}</td>
+      <td>${row.dateWatched}</td>
+      <td class="${getVerdictClass(row.verdict)}">${row.verdict}</td>
     `;
-    // click to load into form for editing
+
+    // Click row to load data into form for editing
     tr.addEventListener('click', () => {
-      idInput.value = r.id;
-      subjectInput.value = r.subject;
-      hoursInput.value = r.hours;
-      dueDateInput.value = r.dueDate;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('id').value = row.id;
+      document.getElementById('title').value = row.title;
+      document.getElementById('genre').value = row.genre;
+      document.getElementById('rating').value = row.rating;
+      document.getElementById('dateWatched').value = row.dateWatched;
     });
-    assignmentTableBody.appendChild(tr);
+
+    tbody.appendChild(tr);
   });
 }
 
-async function refresh() {
-  const data = await getData();
-  renderTable(data);
+function getVerdictClass(verdict) {
+  if (verdict === 'Must Watch') return 'verdict-good';
+  if (verdict === 'Decent') return 'verdict-okay';
+  return 'verdict-bad';
 }
 
-assignmentForm.addEventListener('submit', async (e) => {
+// Handle add/update
+document.getElementById('ratingForm').addEventListener('submit', async e => {
   e.preventDefault();
+
   const payload = {
-    id: idInput.value.trim() || undefined, // undefined -> server will create id
-    subject: subjectInput.value.trim(),
-    hours: Number(hoursInput.value),
-    dueDate: dueDateInput.value
+    id: document.getElementById('id').value,
+    title: document.getElementById('title').value,
+    genre: document.getElementById('genre').value,
+    rating: parseInt(document.getElementById('rating').value),
+    dateWatched: document.getElementById('dateWatched').value,
   };
-  // simple validation client-side
-  if (!payload.subject || !payload.dueDate || isNaN(payload.hours)) {
-    alert('Please fill subject, hours, and due date.');
-    return;
-  }
-  const res = await fetch('/add', {
+
+  await fetch('/api/add', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
-  if (!res.ok) {
-    alert('Server error saving assignment.');
-    return;
-  }
-  const json = await res.json();
-  renderTable(json.data || []);
-  // clear id (so next create is new) but keep others
-  idInput.value = '';
+
+  fetchData();
 });
 
-document.getElementById('clearBtn').addEventListener('click', () => {
-  idInput.value = '';
-  subjectInput.value = '';
-  hoursInput.value = '';
-  dueDateInput.value = '';
-});
-
-deleteForm.addEventListener('submit', async (e) => {
+// Handle delete
+document.getElementById('deleteForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const id = deleteIdInput.value.trim();
-  if (!id) { alert('Enter an ID to delete'); return; }
-  if (!confirm('Delete assignment with ID ' + id + '?')) return;
-  const res = await fetch('/delete', {
+
+  const id = document.getElementById('deleteId').value;
+
+  await fetch('/api/delete', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id })
+    body: JSON.stringify({ id }),
   });
-  if (!res.ok) {
-    alert('Server error deleting.');
-    return;
-  }
-  const json = await res.json();
-  renderTable(json.data || []);
-  deleteIdInput.value = '';
+
+  fetchData();
 });
 
-// initial load
-refresh();
+// Initial load
+fetchData();
