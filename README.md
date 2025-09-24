@@ -1,23 +1,46 @@
 # Movie Rating Tracker - Aanan Goyal
 
-https://a2-aanangoyal-a25.onrender.com
+https://a3-aanangoyal.onrender.com
 
-A web application to track movie ratings, built with Node.js, Express, HTML, CSS, and JavaScript. Users can add movies with title, rating, and release year, view them in a table, and delete entries. Movies are automatically categorized as Excellent, Good, Average, or Poor based on their rating.
-
-The application uses Flexbox for layout design, ensuring responsive and visually appealing alignment of elements such as the navigation bar, movie cards, and tables.
+A web application for tracking movie ratings with user authentication and persistent storage. Built with Express, MongoDB, and Bootstrap.
 
 ## Features
 
-- Add movies with title, rating (1-10), and release year.
-- Automatic categorization of movies based on rating.
-- View all movies in a table format.
-- Delete movies from the database.
-- Update ratings given for th emovie.
+- **User Authentication**: Simple login system that creates accounts on first login
+- **Personal Movie Collections**: Each user has their own private movie list
+- **Full CRUD Operations**: Add, view, update ratings, and delete movies
+- **Automatic Recommendations**: Movies categorized as Must Watch, Highly Recommended, Worth Watching, or Skip
+- **Responsive Design**: Clean Bootstrap-based UI that works on all devices
 
+## Authentication Strategy
 
-## Design/Evaluation Achievements
-Names: Theo and Diamond.
-1. Thei suggested adding a confirmation dialog before deleting data to prevent accidental deletions. 
-2. Diamond recommended improving the table layout by adding sorting functionality for better usability.
-3. Theo also proposed including a search bar to filter movies by title or category. 
-4. Diamond suggested enhancing the user experience by displaying a summary of the total number of movies and their categories at the top of the results page.
+I chose simple username/password authentication because it was straightforward to implement and meets the assignment requirements. New accounts are automatically created on first login, which is clearly communicated to users on the login page.
+
+## CSS Framework
+
+I used **Bootstrap 5.3** because:
+- Provides professional-looking components out of the box
+- Excellent documentation and widespread adoption
+- Built-in responsive design
+- Minimal custom CSS needed
+
+**Custom CSS modifications**: Added gradient background for login page and some custom styling for alert positioning.
+
+## Express Middleware Packages
+
+- **express-session**: Manages user sessions and login state
+- **bcryptjs**: Hashes passwords securely before storing in database
+- **dotenv**: Loads environment variables from .env file for MongoDB connection
+- **mongodb**: Official MongoDB Node.js driver for database operations
+
+## Database Design
+
+Uses MongoDB with a simple schema:
+- **users collection**: `{ username, password, movies: [], createdAt }`
+- Movies are stored as embedded documents in user records for simplicity
+
+## Login Instructions
+
+Use any username/password combination. If the account doesn't exist, it will be created automatically. For testing, you can use:
+- Username: `test`
+- Password: `password`

@@ -4,33 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Movies - Movie Rating Tracker</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1>🎬 Movie Rating Tracker</h1>
-            <p>Your complete movie collection and ratings</p>
-        </header>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">🎬 Movie Tracker</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Add Movie</a>
+                <a class="nav-link active" href="/results">View Movies</a>
+                <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
 
-        <nav class="navigation">
-            <a href="/" class="nav-link">Add Movie</a>
-            <a href="/results" class="nav-link active">View All Movies</a>
-        </nav>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Your Movie Collection</h2>
+            <span class="badge bg-primary fs-6">Total: <span id="movieCount">0</span></span>
+        </div>
 
-        <main class="main-content">
-            <section class="results-section">
-                <div class="results-header">
-                    <h2>All Movies</h2>
-                    <div class="movie-count">
-                        Total: <span id="movieCount">0</span> movies
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table id="moviesTable" class="movies-table">
-                        <thead>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="moviesTable">
+                        <thead class="table-dark">
                             <tr>
                                 <th>Title</th>
                                 <th>Genre</th>
@@ -42,25 +40,31 @@
                         </thead>
                         <tbody id="moviesTableBody">
                             <tr>
-                                <td colspan="6" class="loading-row">Loading movies...</td>
+                                <td colspan="6" class="text-center">Loading movies...</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div class="empty-state" id="emptyState" style="display: none;">
-                    <h3>No movies yet!</h3>
-                    <p>Start building your movie collection by adding your first movie.</p>
-                    <a href="/" class="add-first-movie-btn">Add Your First Movie</a>
+                <div id="emptyState" class="text-center py-5" style="display: none;">
+                    <h4>No movies yet!</h4>
+                    <p class="text-muted">Start building your collection</p>
+                    <a href="/" class="btn btn-primary">Add Your First Movie</a>
                 </div>
-            </section>
-        </main>
-
-        <footer class="footer">
-            <p>&copy; 2025 Movie Rating Tracker. Track your cinematic journey!</p>
-        </footer>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
+    <script>
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+    </script>
 </body>
 </html>

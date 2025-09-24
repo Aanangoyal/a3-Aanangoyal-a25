@@ -1,277 +1,185 @@
-// Main JS file for both index.html and results.html
 document.addEventListener('DOMContentLoaded', function() {
-  // Check which page
-  const currentPage = window.location.pathname;
-  
-  if (currentPage === '/' || currentPage.includes('index.html')) {
-      initIndexPage();
-  } else if (currentPage === '/results' || currentPage.includes('results.html')) {
-      initResultsPage();
-  }
+    const currentPage = window.location.pathname;
+    
+    if (currentPage === '/') {
+        initIndexPage();
+    } else if (currentPage === '/results') {
+        initResultsPage();
+    }
 
-  // Initialize index page
-  function initIndexPage() {
-      const movieForm = document.getElementById('movieForm');
-      const recentMoviesDiv = document.getElementById('recentMovies');
+    function initIndexPage() {
+        const form = document.getElementById('movieForm');
+        if (!form) return;
+        
+        loadRecentMovies();
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                title: document.getElementById('title').value,
+                genre: document.getElementById('genre').value,
+                rating: document.getElementById('rating').value
+            };
 
-      if (!movieForm || !recentMoviesDiv) return;
-      
-      loadRecentMovies();
+            try {
+                const response = await fetch('/api/movies', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
 
-      movieForm.addEventListener('submit', async function(e) {
-          e.preventDefault();
-          
-          const formData = new FormData(movieForm);
-          const movieData = {
-              title: formData.get('title'),
-              genre: formData.get('genre'),
-              rating: parseFloat(formData.get('rating'))
-          };
+                if (response.ok) {
+                    form.reset();
+                    loadRecentMovies();
+                    showMessage('Movie added successfully!', 'success');
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error, 'danger');
+                }
+            } catch (error) {
+                showMessage('Failed to add movie', 'danger');
+            }
+        });
 
-          try {
-              const response = await fetch('/api/movies', {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(movieData)
-              });
+        async function loadRecentMovies() {
+            try {
+                const response = await fetch('/api/movies');
+                const movies = await response.json();
+                displayRecentMovies(movies.slice(-3).reverse());
+            } catch (error) {
+                document.getElementById('recentMovies').innerHTML = '<p class="text-danger">Failed to load movies</p>';
+            }
+        }
 
-              if (response.ok) {
-                  const newMovie = await response.json();
-                  movieForm.reset();
-                  loadRecentMovies(); 
-                  showSuccessMessage(`"${newMovie.title}" added successfully!`);
-              } else {
-                  const error = await response.json();
-                  showErrorMessage(error.error || 'Failed to add movie');
-              }
-          } catch (error) {
-              console.error('Error adding movie:', error);
-              showErrorMessage('Network error. Please try again.');
-          }
-      });
+        function displayRecentMovies(movies) {
+            const container = document.getElementById('recentMovies');
+            if (movies.length === 0) {
+                container.innerHTML = '<p class="text-muted">No movies yet</p>';
+                return;
+            }
 
-      async function loadRecentMovies() {
-          try {
-              const response = await fetch('/api/movies');
-              const movies = await response.json();
-              
-              displayRecentMovies(movies.slice(-3).reverse()); // Show last 3 movies
-          } catch (error) {
-              console.error('Error loading movies:', error);
-              recentMoviesDiv.innerHTML = '<p class="error">Failed to load recent movies.</p>';
-          }
-      }
+            container.innerHTML = movies.map(movie => `
+                <div class="border-start border-3 border-primary ps-3 mb-2">
+                    <div class="fw-bold">${escapeHtml(movie.title)}</div>
+                    <small class="text-muted">${movie.genre} • ${movie.rating}/10 • ${movie.recommendation}</small>
+                </div>
+            `).join('');
+        }
+    }
 
-      function displayRecentMovies(movies) {
-          if (movies.length === 0) {
-              recentMoviesDiv.innerHTML = '<p>No movies added yet. Add your first movie!</p>';
-              return;
-          }
+    function initResultsPage() {
+        loadAllMovies();
 
-          const moviesHTML = movies.map(movie => `
-              <div class="movie-card">
-                  <div class="movie-title">${escapeHtml(movie.title)}</div>
-                  <div class="movie-details">
-                      ${escapeHtml(movie.genre)} • Rating: ${movie.rating}/10 • ${movie.recommendation}
-                  </div>
-              </div>
-          `).join('');
+        async function loadAllMovies() {
+            try {
+                const response = await fetch('/api/movies');
+                const movies = await response.json();
+                displayMovies(movies);
+                document.getElementById('movieCount').textContent = movies.length;
+            } catch (error) {
+                showMessage('Failed to load movies', 'danger');
+            }
+        }
 
-          recentMoviesDiv.innerHTML = moviesHTML;
-      }
-  }
+        function displayMovies(movies) {
+            const tbody = document.getElementById('moviesTableBody');
+            const table = document.getElementById('moviesTable');
+            const emptyState = document.getElementById('emptyState');
 
-  // Initialize results page
-  function initResultsPage() {
-      const moviesTableBody = document.getElementById('moviesTableBody');
-      const movieCountSpan = document.getElementById('movieCount');
-      const emptyState = document.getElementById('emptyState');
-      const moviesTable = document.getElementById('moviesTable');
+            if (movies.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
 
-      if (!moviesTableBody || !movieCountSpan) return;
+            table.style.display = 'table';
+            emptyState.style.display = 'none';
 
-      loadAllMovies();
+            tbody.innerHTML = movies.map(movie => `
+                <tr>
+                    <td><strong>${escapeHtml(movie.title)}</strong></td>
+                    <td><span class="badge bg-secondary">${movie.genre}</span></td>
+                    <td>
+                        <input type="number" class="form-control form-control-sm" 
+                               style="width: 80px" value="${movie.rating}" 
+                               min="0" max="10" step="0.1" 
+                               onchange="updateRating(${movie.id}, this.value)">
+                    </td>
+                    <td>${formatDate(movie.dateAdded)}</td>
+                    <td><span class="badge ${getRecBadge(movie.recommendation)}">${movie.recommendation}</span></td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="deleteMovie(${movie.id})">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
 
-      async function loadAllMovies() {
-          try {
-              const response = await fetch('/api/movies');
-              const movies = await response.json();
-              
-              displayMovies(movies);
-              updateMovieCount(movies.length);
-          } catch (error) {
-              console.error('Error loading movies:', error);
-              showErrorMessage('Failed to load movies.');
-          }
-      }
+        window.loadAllMovies = loadAllMovies;
+    }
 
-      function displayMovies(movies) {
-          if (movies.length === 0) {
-              if (moviesTable) moviesTable.style.display = 'none';
-              if (emptyState) emptyState.style.display = 'block';
-              return;
-          }
+    window.deleteMovie = async function(id) {
+        if (!confirm('Delete this movie?')) return;
+        
+        try {
+            const response = await fetch(`/api/movies/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                if (window.loadAllMovies) window.loadAllMovies();
+                showMessage('Movie deleted', 'success');
+            }
+        } catch (error) {
+            showMessage('Delete failed', 'danger');
+        }
+    };
 
-          if (moviesTable) moviesTable.style.display = 'table';
-          if (emptyState) emptyState.style.display = 'none';
+    window.updateRating = async function(id, rating) {
+        try {
+            const response = await fetch(`/api/movies/${id}/rating`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rating: parseFloat(rating) })
+            });
+            
+            if (response.ok && window.loadAllMovies) {
+                window.loadAllMovies();
+                showMessage('Rating updated', 'success');
+            }
+        } catch (error) {
+            showMessage('Update failed', 'danger');
+        }
+    };
 
-          const moviesHTML = movies.map(movie => `
-              <tr>
-                  <td><strong>${escapeHtml(movie.title)}</strong></td>
-                  <td>${escapeHtml(movie.genre)}</td>
-                  <td>
-                      <input type="number" class="rating-input" value="${movie.rating}" 
-                          min="0" max="10" step="0.1" 
-                          onchange="updateRating(${movie.id}, this.value)" />
-                  </td>
-                  <td>${formatDate(movie.dateAdded)}</td>
-                  <td>
-                      <span class="recommendation-badge ${getRecommendationClass(movie.recommendation)}">
-                          ${escapeHtml(movie.recommendation)}
-                      </span>
-                  </td>
-                  <td>
-                      <button class="delete-btn" onclick="deleteMovie(${movie.id})">
-                          Delete
-                      </button>
-                  </td>
-              </tr>
-          `).join('');
+    function getRecBadge(rec) {
+        const badges = {
+            'Must Watch': 'bg-danger',
+            'Highly Recommended': 'bg-primary',
+            'Worth Watching': 'bg-success',
+            'Skip': 'bg-secondary'
+        };
+        return badges[rec] || 'bg-secondary';
+    }
 
-          moviesTableBody.innerHTML = moviesHTML;
-      }
+    function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString();
+    }
 
-      function updateMovieCount(count) {
-          movieCountSpan.textContent = count;
-      }
+    function showMessage(message, type) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alert.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alert);
+        setTimeout(() => alert.remove(), 3000);
+    }
 
-      window.loadAllMovies = loadAllMovies;
-  }
-
-  // Delete movie function 
-  window.deleteMovie = async function(movieId) {
-      if (!confirm('Are you sure you want to delete this movie?')) {
-          return;
-      }
-
-      try {
-          const response = await fetch(`/api/movies/${movieId}`, {
-              method: 'DELETE'
-          });
-
-          if (response.ok) {
-              if (window.loadAllMovies) {
-                  window.loadAllMovies();
-              }
-              showSuccessMessage('Movie deleted successfully!');
-          } else {
-              const error = await response.json();
-              showErrorMessage(error.error || 'Failed to delete movie');
-          }
-      } catch (error) {
-          console.error('Error deleting movie:', error);
-          showErrorMessage('Network error. Please try again.');
-      }
-  };
-
-  // Update movie rating
-  window.updateRating = async function(movieId, newRating) {
-      try {
-          const response = await fetch(`/api/movies/${movieId}/rating`, {
-              method: 'PATCH',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ rating: parseFloat(newRating) })
-          });
-
-          if (response.ok) {
-              loadAllMovies(); 
-              showSuccessMessage('Rating updated successfully!');
-          } else {
-              const error = await response.json();
-              showErrorMessage(error.error || 'Failed to update rating');
-          }
-      } catch (error) {
-          console.error('Error updating rating:', error);
-          showErrorMessage('Network error. Please try again.');
-      }
-  };
-
-  function getRatingClass(rating) {
-      if (rating >= 8.5) return 'rating-excellent';
-      if (rating >= 7.0) return 'rating-good';
-      if (rating >= 5.0) return 'rating-average';
-      return 'rating-poor';
-  }
-
-  function getRecommendationClass(recommendation) {
-      const classMap = {
-          'Must Watch': 'rec-must-watch',
-          'Highly Recommended': 'rec-highly-recommended',
-          'Worth Watching': 'rec-worth-watching',
-          'Mediocre': 'rec-mediocre',
-          'Skip': 'rec-skip'
-      };
-      return classMap[recommendation] || 'rec-worth-watching';
-  }
-
-  function formatDate(dateString) {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
-      });
-  }
-
-  function showSuccessMessage(message) {
-      const messageDiv = document.createElement('div');
-      messageDiv.textContent = message;
-      messageDiv.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: #48bb78;
-          color: white;
-          padding: 12px 20px;
-          border-radius: 6px;
-          z-index: 1000;
-          font-weight: 500;
-      `;
-      document.body.appendChild(messageDiv);
-      
-      setTimeout(() => {
-          document.body.removeChild(messageDiv);
-      }, 3000);
-  }
-
-  function showErrorMessage(message) {
-      const messageDiv = document.createElement('div');
-      messageDiv.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: #f56565;
-          color: white;
-          padding: 12px 20px;
-          border-radius: 6px;
-          z-index: 1000;
-          font-weight: 500;
-      `;
-      messageDiv.textContent = message;
-      document.body.appendChild(messageDiv);
-      
-      setTimeout(() => {
-          document.body.removeChild(messageDiv);
-      }, 3000);
-  }
-
-  function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-  }
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 });

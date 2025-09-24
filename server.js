@@ -1,108 +1,209 @@
+require('dotenv').config();
 const express = require('express');
+const { MongoClient } = require('mongodb');
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
 const path = require('path');
-const app = express();
 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// MongoDB setup
+let db;
+const client = new MongoClient(process.env.MONGODB_URI);
+
+// Middleware
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+}));
 
-let movies = [
-    {
-        id: 1,
-        title: "The Shawshank Redemption",
-        genre: "Drama",
-        rating: 9.5,
-        dateAdded: "2024-01-15",
-        recommendation: "Must Watch" 
-    },
-    {
-        id: 2,
-        title: "Pulp Fiction",
-        genre: "Crime",
-        rating: 8.8,
-        dateAdded: "2024-02-20",
-        recommendation: "Highly Recommended" 
+// Auth middleware
+const requireAuth = (req, res, next) => {
+    if (!req.session.userId) {
+        return res.redirect('/login');
     }
-];
+    next();
+};
 
-let nextId = 3;
-
-function calculateRecommendation(rating) {
-    if (rating >= 9.0) {
-        return "Must Watch";
-    } else if (rating >= 7.5) {
-        return "Highly Recommended";
-    } else if (rating >= 6.0) {
-        return "Worth Watching";
-    } else {
-        return "Skip";
+// Connect to MongoDB
+async function connectDB() {
+    try {
+        await client.connect();
+        db = client.db('movietracker');
+        console.log('Connected to MongoDB');
+    } catch (error) {
+        console.error('MongoDB connection error:', error);
+        process.exit(1);
     }
 }
 
-app.get('/api/movies', (req, res) => {
-    res.json(movies);
-});
+// Helper function to calculate recommendation
+function calculateRecommendation(rating) {
+    if (rating >= 9.0) return "Must Watch";
+    if (rating >= 7.5) return "Highly Recommended";
+    if (rating >= 6.0) return "Worth Watching";
+    return "Skip";
+}
 
-app.post('/api/movies', (req, res) => {
-    const { title, genre, rating, dateAdded } = req.body;
-    const newMovie = {
-        id: nextId++,
-        title,
-        genre,
-        rating: parseFloat(rating),
-        dateAdded,
-        recommendation: calculateRecommendation(parseFloat(rating))
-    };
-    movies.push(newMovie);
-    res.json(newMovie);
-});
-
-app.put('/api/movies/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    const { title, genre, rating, dateAdded } = req.body;
-    const movie = movies.find(m => m.id === id);
-
-    if (movie) {
-        movie.title = title || movie.title;
-        movie.genre = genre || movie.genre;
-        movie.rating = rating !== undefined ? parseFloat(rating) : movie.rating;
-        movie.dateAdded = dateAdded || movie.dateAdded;
-        movie.recommendation = calculateRecommendation(movie.rating);
-        res.json(movie);
-    } else {
-        res.status(404).json({ message: "Movie not found" });
-    }
-});
-
-app.patch('/api/movies/:id/rating', (req, res) => {
-    const id = parseInt(req.params.id);
-    const { rating } = req.body;
-    const movie = movies.find(m => m.id === id);
-
-    if (movie) {
-        movie.rating = parseFloat(rating);
-        movie.recommendation = calculateRecommendation(movie.rating);
-        res.json(movie);
-    } else {
-        res.status(404).json({ message: "Movie not found" });
-    }
-});
-
-app.delete('/api/movies/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    movies = movies.filter(m => m.id !== id);
-    res.json({ message: "Movie deleted" });
-});
-
-app.get('/', (req, res) => {
+// Routes
+app.get('/', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/results', (req, res) => {
+app.get('/results', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'results.html'));
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Auth endpoints
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password required' });
+    }
+
+    try {
+        let user = await db.collection('users').findOne({ username });
+        
+        if (!user) {
+            // Create new user
+            const hashedPassword = await bcrypt.hash(password, 10);
+            user = {
+                username,
+                password: hashedPassword,
+                movies: [],
+                createdAt: new Date()
+            };
+            await db.collection('users').insertOne(user);
+            req.session.userId = user._id;
+            req.session.username = username;
+            return res.json({ message: 'Account created successfully!' });
+        }
+        
+        // Check password
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            return res.status(401).json({ error: 'Invalid password' });
+        }
+        
+        req.session.userId = user._id;
+        req.session.username = username;
+        res.json({ message: 'Login successful' });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: 'Login failed' });
+    }
+});
+
+app.post('/api/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Logout failed' });
+        }
+        res.json({ message: 'Logged out successfully' });
+    });
+});
+
+// Movie endpoints
+app.get('/api/movies', requireAuth, async (req, res) => {
+    try {
+        const user = await db.collection('users').findOne({ username: req.session.username });
+        res.json(user.movies || []);
+    } catch (error) {
+        console.error('Error fetching movies:', error);
+        res.status(500).json({ error: 'Failed to fetch movies' });
+    }
+});
+
+app.post('/api/movies', requireAuth, async (req, res) => {
+    const { title, genre, rating } = req.body;
+    
+    if (!title || !genre || rating === undefined) {
+        return res.status(400).json({ error: 'All fields required' });
+    }
+
+    try {
+        const newMovie = {
+            id: Date.now(),
+            title,
+            genre,
+            rating: parseFloat(rating),
+            dateAdded: new Date().toISOString(),
+            recommendation: calculateRecommendation(parseFloat(rating))
+        };
+
+        await db.collection('users').updateOne(
+            { username: req.session.username },
+            { $push: { movies: newMovie } }
+        );
+
+        res.json(newMovie);
+    } catch (error) {
+        console.error('Error adding movie:', error);
+        res.status(500).json({ error: 'Failed to add movie' });
+    }
+});
+
+app.patch('/api/movies/:id/rating', requireAuth, async (req, res) => {
+    const movieId = parseInt(req.params.id);
+    const { rating } = req.body;
+
+    try {
+        const newRating = parseFloat(rating);
+        const newRecommendation = calculateRecommendation(newRating);
+        
+        await db.collection('users').updateOne(
+            { username: req.session.username, "movies.id": movieId },
+            { 
+                $set: { 
+                    "movies.$.rating": newRating,
+                    "movies.$.recommendation": newRecommendation
+                }
+            }
+        );
+
+        res.json({ message: 'Rating updated' });
+    } catch (error) {
+        console.error('Error updating rating:', error);
+        res.status(500).json({ error: 'Failed to update rating' });
+    }
+});
+
+app.delete('/api/movies/:id', requireAuth, async (req, res) => {
+    const movieId = parseInt(req.params.id);
+
+    try {
+        await db.collection('users').updateOne(
+            { username: req.session.username },
+            { $pull: { movies: { id: movieId } } }
+        );
+
+        res.json({ message: 'Movie deleted' });
+    } catch (error) {
+        console.error('Error deleting movie:', error);
+        res.status(500).json({ error: 'Failed to delete movie' });
+    }
+});
+
+// Start server
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    await client.close();
+    process.exit(0);
 });
