@@ -8,7 +8,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// MongoDB setup
+// MongoDB
 let db;
 const client = new MongoClient(process.env.MONGODB_URI);
 
@@ -40,7 +40,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// Improved auth middleware
 const requireAuth = (req, res, next) => {
     // Skip auth for login page and login API
     if (req.url === '/login' || req.url === '/api/login') {
@@ -55,7 +54,6 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
-// Connect to MongoDB with retry logic
 async function connectDB() {
     try {
         await client.connect();
@@ -68,7 +66,6 @@ async function connectDB() {
     }
 }
 
-// Helper function to calculate recommendation
 function calculateRecommendation(rating) {
     if (rating >= 9.0) return "Must Watch";
     if (rating >= 7.5) return "Highly Recommended";
@@ -76,7 +73,6 @@ function calculateRecommendation(rating) {
     return "Skip";
 }
 
-// Routes
 app.get('/', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -86,7 +82,6 @@ app.get('/results', requireAuth, (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-    // If already logged in, redirect to home
     if (req.session.userId) {
         return res.redirect('/');
     }
@@ -105,7 +100,6 @@ app.post('/api/login', async (req, res) => {
         let user = await db.collection('users').findOne({ username });
         
         if (!user) {
-            // Create new user
             const hashedPassword = await bcrypt.hash(password, 10);
             user = {
                 username,
@@ -120,7 +114,6 @@ app.post('/api/login', async (req, res) => {
             return res.json({ message: 'Account created successfully!' });
         }
         
-        // Check password
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
             return res.status(401).json({ error: 'Invalid password' });
@@ -148,7 +141,6 @@ app.post('/api/logout', (req, res) => {
     });
 });
 
-// Movie endpoints
 app.get('/api/movies', requireAuth, async (req, res) => {
     try {
         const user = await db.collection('users').findOne({ username: req.session.username });
@@ -168,7 +160,7 @@ app.post('/api/movies', requireAuth, async (req, res) => {
 
     try {
         const newMovie = {
-            id: Date.now() + Math.random(), // Prevent duplicate IDs
+            id: Date.now() + Math.random(),
             title,
             genre,
             rating: parseFloat(rating),
@@ -189,7 +181,7 @@ app.post('/api/movies', requireAuth, async (req, res) => {
 });
 
 app.patch('/api/movies/:id/rating', requireAuth, async (req, res) => {
-    const movieId = parseFloat(req.params.id); // Handle decimal IDs
+    const movieId = parseFloat(req.params.id);
     const { rating } = req.body;
 
     try {
@@ -229,14 +221,12 @@ app.delete('/api/movies/:id', requireAuth, async (req, res) => {
     }
 });
 
-// Start server
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });
 });
 
-// Graceful shutdown
 process.on('SIGINT', async () => {
     await client.close();
     process.exit(0);
