@@ -18,21 +18,21 @@ I chose simple username/password authentication because it was straightforward t
 
 ## CSS Framework
 
-I used **Bootstrap 5.3** because it provides professional components with minimal custom CSS needed and has excellent documentation.
+I used Bootstrap 5.3 because it provides professional components with minimal custom CSS needed and has excellent documentation.
 
-**Custom CSS modifications**: Added gradient background for login page and alert positioning styles.
+Custom CSS modifications: Added gradient background for login page and alert positioning styles.
 
 ## Express Middleware Packages
 
-- **express-session**: Manages user sessions and login state
-- **bcryptjs**: Hashes passwords securely before database storage
-- **dotenv**: Loads environment variables from .env file for MongoDB connection
-- **mongodb**: Official MongoDB Node.js driver for database operations
+- express-session: Manages user sessions and login state
+- bcryptjs: Hashes passwords securely before database storage
+- dotenv: Loads environment variables from .env file for MongoDB connection
+- mongodb: Official MongoDB Node.js driver for database operations
 
 ## Database Design
 
 Uses MongoDB with simple schema:
-- **users collection**: `{ username, password, movies: [], createdAt }`
+- users collection: `{ username, password, movies: [], createdAt }`
 - Movies stored as embedded documents for simplicity and better performance
 
 ## Login Instructions
