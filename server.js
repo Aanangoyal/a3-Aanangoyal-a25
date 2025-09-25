@@ -20,18 +20,42 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+    cookie: { 
+        secure: false, 
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: 'lax'
+    },
+    name: 'movietracker.sid'
 }));
 
-// Auth middleware
+// Debug middleware (remove after fixing)
+app.use((req, res, next) => {
+    console.log('Request:', {
+        url: req.url,
+        sessionId: req.sessionID,
+        userId: req.session?.userId,
+        method: req.method
+    });
+    next();
+});
+
+// Improved auth middleware
 const requireAuth = (req, res, next) => {
+    // Skip auth for login page and login API
+    if (req.url === '/login' || req.url === '/api/login') {
+        return next();
+    }
+    
     if (!req.session.userId) {
+        console.log('No valid session, redirecting to login');
         return res.redirect('/login');
     }
+    
     next();
 };
 
-// Connect to MongoDB
+// Connect to MongoDB with retry logic
 async function connectDB() {
     try {
         await client.connect();
@@ -39,7 +63,8 @@ async function connectDB() {
         console.log('Connected to MongoDB');
     } catch (error) {
         console.error('MongoDB connection error:', error);
-        process.exit(1);
+        console.log('Retrying connection in 5 seconds...');
+        setTimeout(connectDB, 5000);
     }
 }
 
@@ -61,6 +86,10 @@ app.get('/results', requireAuth, (req, res) => {
 });
 
 app.get('/login', (req, res) => {
+    // If already logged in, redirect to home
+    if (req.session.userId) {
+        return res.redirect('/');
+    }
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
@@ -87,6 +116,7 @@ app.post('/api/login', async (req, res) => {
             await db.collection('users').insertOne(user);
             req.session.userId = user._id;
             req.session.username = username;
+            console.log('New user created:', username);
             return res.json({ message: 'Account created successfully!' });
         }
         
@@ -98,6 +128,7 @@ app.post('/api/login', async (req, res) => {
         
         req.session.userId = user._id;
         req.session.username = username;
+        console.log('User logged in:', username);
         res.json({ message: 'Login successful' });
     } catch (error) {
         console.error('Login error:', error);
@@ -106,10 +137,13 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.post('/api/logout', (req, res) => {
+    const username = req.session.username;
     req.session.destroy((err) => {
         if (err) {
+            console.error('Logout error:', err);
             return res.status(500).json({ error: 'Logout failed' });
         }
+        console.log('User logged out:', username);
         res.json({ message: 'Logged out successfully' });
     });
 });
@@ -118,7 +152,7 @@ app.post('/api/logout', (req, res) => {
 app.get('/api/movies', requireAuth, async (req, res) => {
     try {
         const user = await db.collection('users').findOne({ username: req.session.username });
-        res.json(user.movies || []);
+        res.json(user?.movies || []);
     } catch (error) {
         console.error('Error fetching movies:', error);
         res.status(500).json({ error: 'Failed to fetch movies' });
@@ -134,7 +168,7 @@ app.post('/api/movies', requireAuth, async (req, res) => {
 
     try {
         const newMovie = {
-            id: Date.now(),
+            id: Date.now() + Math.random(), // Prevent duplicate IDs
             title,
             genre,
             rating: parseFloat(rating),
@@ -155,7 +189,7 @@ app.post('/api/movies', requireAuth, async (req, res) => {
 });
 
 app.patch('/api/movies/:id/rating', requireAuth, async (req, res) => {
-    const movieId = parseInt(req.params.id);
+    const movieId = parseFloat(req.params.id); // Handle decimal IDs
     const { rating } = req.body;
 
     try {
@@ -180,7 +214,7 @@ app.patch('/api/movies/:id/rating', requireAuth, async (req, res) => {
 });
 
 app.delete('/api/movies/:id', requireAuth, async (req, res) => {
-    const movieId = parseInt(req.params.id);
+    const movieId = parseFloat(req.params.id);
 
     try {
         await db.collection('users').updateOne(
