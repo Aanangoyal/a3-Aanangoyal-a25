@@ -39,3 +39,5 @@ Uses MongoDB with simple schema:
 
 Use any username/password combination. If account doesn't exist, it will be created automatically.
 For testing: Username `test`, Password `password`
+
+note: readme created using AI
