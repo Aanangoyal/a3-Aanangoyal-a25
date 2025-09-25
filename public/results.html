@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track and rate your favorite movies with personal recommendations">
+    <meta name="keywords" content="movie, rating, tracker, personal, collection">
+    <meta name="author" content="Aanan Goyal">
+    <link rel="canonical" href="https://a3-aanangoyal-a25.onrender.com/">
     <title>All Movies - Movie Rating Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
+    <a class="visually-hidden-focusable" href="#main-content">Skip to main content</a>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="/">🎬 Movie Tracker</a>
@@ -18,7 +23,7 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <main class="container mt-4" id="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Your Movie Collection</h2>
             <span class="badge bg-primary fs-6">Total: <span id="movieCount">0</span></span>
@@ -28,6 +33,7 @@
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-hover" id="moviesTable">
+                        <caption class="visually-hidden">Your personal movie collection with ratings and recommendations</caption>
                         <thead class="table-dark">
                             <tr>
                                 <th>Title</th>
@@ -53,7 +59,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script src="script.js"></script>
     <script>

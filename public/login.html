@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track and rate your favorite movies with personal recommendations">
+    <meta name="keywords" content="movie, rating, tracker, personal, collection">
+    <meta name="author" content="Aanan Goyal">
+    <link rel="canonical" href="https://a3-aanangoyal-a25.onrender.com/">
     <title>Login - Movie Rating Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -11,35 +15,38 @@
     </style>
 </head>
 <body class="d-flex align-items-center">
+    <a class="visually-hidden-focusable" href="#main-content">Skip to main content</a>
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-4">
-                <div class="card login-card">
+                <main class="card login-card" id="main-content">
                     <div class="card-body p-5">
                         <div class="text-center mb-4">
-                            <h2 class="h3 mb-2">🎬 Movie Tracker</h2>
+                            <h1 class="h3 mb-2">🎬 Movie Tracker</h1>
                             <p class="text-muted">Login to your account</p>
                         </div>
                         
                         <form id="loginForm">
                             <div class="mb-3">
-                                <label class="form-label">Username</label>
-                                <input type="text" class="form-control" id="username" required>
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" required aria-describedby="usernameHelp">
+                                <div id="usernameHelp" class="form-text">Enter your username</div>
                             </div>
                             <div class="mb-4">
-                                <label class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" required>
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required aria-describedby="passwordHelp">
+                                <div id="passwordHelp" class="form-text">Enter your password</div>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
+                            <button type="submit" class="btn btn-primary w-100 mb-3" aria-label="Login to your movie tracker account">Login</button>
                         </form>
                         
-                        <div class="alert alert-info">
+                        <div class="alert alert-info" role="alert">
                             <small>New user? Just enter a username and password to create an account!</small>
                         </div>
                         
-                        <div id="message" class="alert" style="display: none;"></div>
+                        <div id="message" class="alert" style="display: none;" role="alert" aria-live="polite"></div>
                     </div>
-                </div>
+                </main>
             </div>
         </div>
     </div>

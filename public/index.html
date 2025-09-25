@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track and rate your favorite movies with personal recommendations">
+    <meta name="keywords" content="movie, rating, tracker, personal, collection">
+    <meta name="author" content="Aanan Goyal">
+    <link rel="canonical" href="https://a3-aanangoyal-a25.onrender.com/">
     <title>Movie Rating Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
+    <a class="visually-hidden-focusable" href="#main-content">Skip to main content</a>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="/">🎬 Movie Tracker</a>
@@ -18,7 +23,8 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <main class="container mt-4" id="main-content">
+
         <div class="row">
             <div class="col-md-6">
                 <div class="card">
@@ -28,13 +34,14 @@
                     <div class="card-body">
                         <form id="movieForm">
                             <div class="mb-3">
-                                <label class="form-label">Movie Title</label>
-                                <input type="text" class="form-control" id="title" required>
+                                <label for="title" class="form-label">Movie Title</label>
+                                <input type="text" class="form-control" id="title" name="title" required aria-describedby="titleHelp">
+                                <div id="titleHelp" class="form-text">Enter the full movie title</div>
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label">Genre</label>
-                                <select class="form-select" id="genre" required>
+                                <label for="genre" class="form-label">Genre</label>
+                                <select class="form-select" id="genre" name="genre" required aria-describedby="genreHelp">
                                     <option value="">Select genre</option>
                                     <option value="Action">Action</option>
                                     <option value="Comedy">Comedy</option>
@@ -44,11 +51,13 @@
                                     <option value="Sci-Fi">Sci-Fi</option>
                                     <option value="Thriller">Thriller</option>
                                 </select>
+                                <div id="genreHelp" class="form-text">Choose the movie's primary genre</div>
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label">Rating (0-10)</label>
-                                <input type="number" class="form-control" id="rating" min="0" max="10" step="0.1" required>
+                                <label for="rating" class="form-label">Rating (0-10)</label>
+                                <input type="number" class="form-control" id="rating" name="rating" min="0" max="10" step="0.1" required aria-describedby="ratingHelp">
+                                <div id="ratingHelp" class="form-text">Rate from 0 (terrible) to 10 (excellent)</div>
                                 <div class="form-text">
                                     <input type="radio" name="ratingType" value="love" id="love" class="me-1">
                                     <label for="love" class="me-3">Love it</label>
@@ -59,7 +68,9 @@
                                 </div>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary">Add Movie</button>
+                            <button type="submit" class="btn btn-primary" aria-label="Add movie to your personal collection">
+                                Add Movie
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -77,7 +88,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script src="script.js"></script>
     <script>
