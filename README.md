@@ -1,6 +1,6 @@
 # Movie Rating Tracker - Aanan Goyal
 
-https://a3-aanangoyal.onrender.com
+https://a3-aanangoyal-a25.onrender.com
 
 A web application for tracking movie ratings with user authentication and persistent storage. Built with Express, MongoDB, and Bootstrap.
 
