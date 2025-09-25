@@ -171,6 +171,8 @@ app.delete('/api/movies/:id', (req, res) => {
     .catch(() => res.status(500).json({ error: 'Delete failed' }));
 });
 
+app.use(express.static('public'));
+
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log(`Server running on ${PORT}`);
