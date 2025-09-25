@@ -12,14 +12,13 @@ let db;
 const client = new MongoClient(process.env.MONGODB_URI);
 
 // Middleware
-app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Simple session with unique name to avoid conflicts
 app.use(session({
     secret: process.env.SESSION_SECRET || 'temp-secret',
-    name: 'movieapp' + Date.now(), // Unique session name each restart
+    name: 'movieapp',
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 30 * 60 * 1000 } // 30 minutes only
